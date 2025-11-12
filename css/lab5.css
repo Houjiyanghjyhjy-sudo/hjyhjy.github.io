@@ -1,0 +1,121 @@
+.login-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-modal.show {
+    display: flex;
+}
+
+.login-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    width: 300px;
+}
+
+.login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.close-login {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.login-form .checkbox-group {
+    margin-bottom: 10px;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login-form .register-link {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.login-form .register-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+.subscribe-form {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.subscribe-form fieldset {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.subscribe-form legend {
+    font-weight: bold;
+}
+
+.subscribe-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.subscribe-form input,
+.subscribe-form select,
+.subscribe-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.subscribe-form .btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.subscribe-form button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
