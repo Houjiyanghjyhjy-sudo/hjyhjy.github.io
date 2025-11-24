@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>秋分书城 - 数字展销平台</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/lab5(2).css">
+    <style>
+        /* 修复导航栏布局 */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* 新增：避免导航栏挤压 */
+            gap: 15px; /* 新增：增加元素间距 */
+        }
+        .nav ul {
+            display: flex;
+            list-style: none;
+            gap: 15px; /* 调整：优化导航项间距 */
+            padding: 0;
+            margin: 0;
+        }
+        .search-bar {
+            min-width: 200px; /* 新增：设置最小宽度，防止过度压缩 */
+        }
+
+        /* 要求的动画效果 */
+        /* 图书项动画：悬停右移、放大、阴影加深 */
+        .book-item {
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+        .book-item:hover {
+            transform: translateX(10px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 按钮动画：登录/注册按钮悬停渐变、缩放 */
+        .auth-form button[type="submit"] {
+            transition: background 0.4s ease, transform 0.4s ease;
+            transform-origin: center;
+        }
+        .auth-form button[type="submit"]:hover {
+            transform: scale(1.05);
+            background: linear-gradient(to right, #2ecc71, #3498db);
+        }
+
+        /* 图标动画：购物车、搜索图标悬停旋转 */
+        .cart-nav i, .search-bar i {
+            transition: transform 0.3s ease;
+            transform-origin: center;
+        }
+        .cart-nav:hover i, .search-bar:hover i {
+            transform: rotate(360deg);
+        }
+
+        /* 轮播图动画：关键帧实现自动切换 */
+        .banner {
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .banner-slides {
+            display: flex;
+            width: 300%;
+            animation: bannerSlide 15s infinite ease-in-out;
+        }
+        .banner-slides img {
+            width: 33.333%;
+            height: 300px;
+            object-fit: cover;
+        }
+        @keyframes bannerSlide {
+            0%, 30% { transform: translateX(0); }
+            33%, 63% { transform: translateX(-33.333%); }
+            66%, 96% { transform: translateX(-66.666%); }
+            100% { transform: translateX(0); }
+        }
+
+        /* 回到顶部按钮动画：悬停缩放 */
+        .back-top {
+            transition: transform 0.3s ease;
+        }
+        .back-top:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-book-open logo-icon"></i>
+                秋分书城
+            </div>
+            <nav class="nav">
+                <ul>
+                    <li><a href="#"><i class="fas fa-home"></i>首页</a></li>
+                    <li class="dropdown">
+                        <a href="#"><i class="fas fa-list"></i>图书分类</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#"><i class="fas fa-book"></i>小说</a></li>
+                            <li><a href="#"><i class="fas fa-rocket"></i>科幻</a></li>
+                            <li><a href="#"><i class="fas fa-landmark"></i>历史</a></li>
+                            <li><a href="#"><i class="fas fa-brain"></i>哲学</a></li>
+                            <li><a href="#"><i class="fas fa-chart-line"></i>经济</a></li>
+                            <li><a href="#"><i class="fas fa-palette"></i>艺术</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#"><i class="fas fa-book"></i>新书上市</a></li>
+                    <li><a href="#"><i class="fas fa-tag"></i>促销活动</a></li>
+                    <li><a href="#"><i class="fas fa-info-circle"></i>关于我们</a></li>
+                    <li class="cart-nav" id="cartNav">
+                        <a href="#">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">0</span>
+                        </a>
+                    </li>
+                    <li><a href="javascript:;" id="loginLink"><i class="fas fa-user"></i>登录/注册</a></li>
+                </ul>
+            </nav>
+            <div class="search-bar">
+                <input type="text" placeholder="搜索图书、作者...">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- 登录模态框 -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>用户登录</h3>
+                <button class="close-modal" data-modal="loginModal">×</button>
+            </div>
+            <form class="auth-form" id="loginForm">
+                <label for="username">用户名/邮箱</label>
+                <input type="text" id="username" name="username" placeholder="请输入用户名或邮箱" required>
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="请输入密码" required>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">记住我</label>
+                </div>
+                <button type="submit">登录</button>
+                <div class="form-switch">
+                    还没有账号？<a href="javascript:;" id="toRegister">立即注册</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 注册模态框 -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>用户注册</h3>
+                <button class="close-modal" data-modal="registerModal">×</button>
+            </div>
+            <form class="auth-form" id="registerForm">
+                <label for="regUsername">用户名</label>
+                <input type="text" id="regUsername" name="regUsername" placeholder="请输入用户名（3-16位）" required minlength="3" maxlength="16">
+                <label for="regEmail">邮箱</label>
+                <input type="email" id="regEmail" name="regEmail" placeholder="请输入邮箱" required>
+                <label for="regPassword">密码</label>
+                <input type="password" id="regPassword" name="regPassword" placeholder="请输入密码（至少6位）" required minlength="6">
+                <label for="regConfirmPassword">确认密码</label>
+                <input type="password" id="regConfirmPassword" name="regConfirmPassword" placeholder="请再次输入密码" required>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                    <label for="agreeTerms">同意<a href="#" target="_blank">用户协议</a>和<a href="#" target="_blank">隐私政策</a></label>
+                </div>
+                <button type="submit">注册</button>
+                <div class="form-switch">
+                    已有账号？<a href="javascript:;" id="toLogin">立即登录</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 图书详情弹窗 -->
+    <div class="modal book-detail-modal" id="bookDetailModal">
+        <div class="modal-content">
+            <div class="book-detail-image">
+                <img id="detailImage" src="" alt="图书详情">
+            </div>
+            <div class="book-detail-info">
+                <button class="close-modal" data-modal="bookDetailModal" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+                <h3 id="detailTitle">图书标题</h3>
+                <div class="book-detail-author" id="detailAuthor">作者：未知</div>
+                <div class="book-detail-price" id="detailPrice">¥0.00</div>
+                
+                <div class="book-detail-description" id="detailDescription">
+                    图书详情描述...
+                </div>
+                
+                <div class="book-detail-features">
+                    <h4>图书特点</h4>
+                    <ul id="detailFeatures">
+                        <li>优质纸张，印刷清晰</li>
+                        <li>内容丰富，知识全面</li>
+                        <li>适合各年龄段阅读</li>
+                    </ul>
+                </div>
+                
+                <div class="book-detail-actions">
+                    <button class="cart-btn" id="detailCartBtn">加入购物车</button>
+                    <button style="background: #2ecc71; color: white;">立即购买</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 购物车模态框 -->
+    <div class="modal cart-modal" id="cartModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>我的购物车</h3>
+                <button class="close-modal" data-modal="cartModal">×</button>
+            </div>
+            <div class="cart-empty" id="cartEmpty">
+                <i class="fas fa-shopping-cart" style="font-size: 50px; margin-bottom: 15px; color: #ddd;"></i>
+                <p>购物车是空的，快去添加商品吧~</p>
+            </div>
+            <div class="cart-list" id="cartList"></div>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>合计：</span>
+                    <span class="total-price" id="totalPrice">¥0.00</span>
+                </div>
+                <button class="checkout-btn">结算</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="container">
+        <aside class="left-col">
+            <h3>图书分类导航</h3>
+            <ul class="category">
+                <li><a href="#"><i class="fas fa-book"></i>小说</a></li>
+                <li><a href="#"><i class="fas fa-rocket"></i>科幻</a></li>
+                <li><a href="#"><i class="fas fa-landmark"></i>历史</a></li>
+                <li><a href="#"><i class="fas fa-brain"></i>哲学</a></li>
+                <li><a href="#"><i class="fas fa-chart-line"></i>经济</a></li>
+                <li><a href="#"><i class="fas fa-palette"></i>艺术</a></li>
+            </ul>
+        </aside>
+
+        <section class="middle-col">
+            <!-- 轮播图区域 -->
+            <section class="banner">
+                <div class="banner-slides">
+                    <img src="1.jpg" alt="图书促销">
+                    <img src="2.jpg" alt="新书上市">
+                    <img src="3.png" alt="会员折扣">
+                </div>
+            </section>
+            
+            <section class="hot-recommend">
+                <h3>热门推荐</h3>
+                <div class="book-grid">
+                    <div class="book-item" data-id="1" data-name="《朝花夕拾》" data-price="20.50" 
+                         data-img="朝花夕拾.jpg"
+                         data-author="鲁迅" data-description="《朝花夕拾》是鲁迅唯一的一部回忆性散文集，原名《旧事重提》。本书是鲁迅回忆童年、少年和青年时期中不同生活经历和体验的文字。全书由《小引》《狗·猫·鼠》《阿长与<山海经>》《二十四孝图》《五猖会》《无常》《从百草园到三味书屋》《父亲的病》《琐记》《藤野先生》《范爱农》《后记》12部分组成。">
+                        <div class="book-image-container">
+                            <img src="朝花夕拾.jpg" alt="朝花夕拾">
+                        </div>
+                        <div class="book-info">
+                            <h4>《朝花夕拾》</h4>
+                            <p>¥20.50</p>
+                            <div class="book-actions">
+                                <button class="cart-btn" data-text="已加入购物车">加入购物车</button>
+                                <button>立即购买</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="book-item" data-id="2" data-name="《人类简史》" data-price="45.00" 
+                         data-img="人类简史.webp"
+                         data-author="尤瓦尔·赫拉利" data-description="《人类简史》是以色列历史学家尤瓦尔·赫拉利的重磅作品。本书讲述了人类如何从一个默默无闻的猿类物种，演化成为地球的主宰。书中涵盖了认知革命、农业革命、科学革命等重大历史节点，探讨了人类社会的发展历程和未来走向。">
+                        <div class="book-image-container">
+                            <img src="人类简史.webp" alt="人类简史">
+                        </div>
+                        <div class="book-info">
+                            <h4>《人类简史》</h4>
+                            <p>¥45.00</p>
+                            <div class="book-actions">
+                                <button class="cart-btn" data-text="已加入购物车">加入购物车</button>
+                                <button>立即购买</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="book-item" data-id="3" data-name="《活着》" data-price="32.00" 
+                         data-img="活着.jpg"
+                         data-author="余华" data-description="《活着》是余华的代表作之一，讲述了一个人一生的故事，这是一个历尽世间沧桑和磨难的老人的人生感言，是一幕演绎人生苦难经历的戏剧。小说以福贵的一生为主线，展现了中国近百年来的社会变迁和普通人的命运起伏。">
+                        <div class="book-image-container">
+                            <img src="活着.jpg" alt="活着">
+                        </div>
+                        <div class="book-info">
+                            <h4>《活着》</h4>
+                            <p>¥32.00</p>
+                            <div class="book-actions">
+                                <button class="cart-btn" data-text="已加入购物车">加入购物车</button>
+                                <button>立即购买</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="book-item" data-id="4" data-name="《未来简史》" data-price="52.00" 
+                         data-img="未来简史.png"
+                         data-author="尤瓦尔·赫拉利" data-description="《未来简史》是尤瓦尔·赫拉利继《人类简史》之后的又一力作。本书探讨了人类未来的发展方向，从生物学、人工智能、基因工程等多个角度，预测了人类社会的未来图景，引发读者对人类命运的深入思考。">
+                        <div class="book-image-container">
+                            <img src="未来简史.png" alt="未来简史">
+                        </div>
+                        <div class="book-info">
+                            <h4>《未来简史》</h4>
+                            <p>¥52.00</p>
+                            <div class="book-actions">
+                                <button class="cart-btn" data-text="已加入购物车">加入购物车</button>
+                                <button>立即购买</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="subscribe-form">
+                <h3>图书推荐订阅</h3>
+                <form action="" method="post" enctype="multipart/form-data">
+                    <fieldset>
+                        <legend>用户信息</legend>
+                        <label for="user">用户名</label>
+                        <input type="text" id="user" name="user" placeholder="请输入用户名" required>
+                        <label for="pwd">密码</label>
+                        <input type="password" id="pwd" name="pwd" placeholder="请输入密码" required>
+                        <label for="email">邮箱</label>
+                        <input type="email" id="email" name="email" placeholder="请输入邮箱" required>
+                    </fieldset>
+                    <fieldset>
+                        <legend>个人偏好</legend>
+                        <div>
+                            <label>性别</label>
+                            <input type="radio" name="gender" id="male" value="male" checked>
+                            <label for="male">男</label>
+                            <input type="radio" name="gender" id="female" value="female">
+                            <label for="female">女</label>
+                        </div>
+                        <div>
+                            <label>兴趣图书分类</label>
+                            <input type="checkbox" name="interest" id="novel" value="novel">
+                            <label for="novel">小说</label>
+                            <input type="checkbox" name="interest" id="scifi" value="scifi">
+                            <label for="scifi">科幻</label>
+                            <input type="checkbox" name="interest" id="history" value="history">
+                            <label for="history">历史</label>
+                        </div>
+                        <div>
+                            <label for="city">所在城市</label>
+                            <select id="city" name="city" required>
+                                <option value="">请选择城市</option>
+                                <option value="shandong">山东</option>
+                                <option value="shanghai">上海</option>
+                                <option value="guangzhou">广州</option>
+                                <option value="shenzhen">深圳</option>
+                            </select>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>留言说明</legend>
+                        <label for="desc">请说明您的图书偏好（选填）</label>
+                        <textarea id="desc" name="desc" rows="5" placeholder="例如：喜欢悬疑类小说，每周希望收到1-2本推荐..."></textarea>
+                    </fieldset>
+                    <fieldset>
+                        <legend>头像上传</legend>
+                        <label for="avatar">上传头像（选填）</label>
+                        <input type="file" id="avatar" name="avatar">
+                    </fieldset>
+                    <div class="btn-group">
+                        <button type="submit">提交订阅</button>
+                        <button type="reset">重置表单</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="new-books">
+                <h3>新书上市</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>书名</th>
+                            <th>作者</th>
+                            <th>价格</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-id="5" data-name="《平凡的世界》" data-price="68.00" 
+                            data-img="平凡的世界.jpg"
+                            data-author="路遥" data-description="《平凡的世界》是路遥的代表作，全景式地表现中国当代城乡社会生活的百万字长篇小说。全书共三部，通过复杂的矛盾纠葛，以孙少安和孙少平两兄弟为中心，刻画了当时社会各阶层众多普通人的形象。">
+                            <td>《平凡的世界》</td>
+                            <td>路遥</td>
+                            <td>¥68.00</td>
+                            <td><button class="table-cart-btn" data-text="已加入购物车">加入购物车</button></td>
+                        </tr>
+                        <tr data-id="6" data-name="《追风筝的人》" data-price="39.00" 
+                            data-img="追风筝的人.jpg"
+                            data-author="卡勒德·胡赛尼" data-description="《追风筝的人》是美籍阿富汗作家卡勒德·胡赛尼的第一部小说。小说以第一人称的角度讲述了一个来自阿富汗首都喀布尔富人区的普什图男孩阿米尔的故事，展现了人性的背叛与救赎。">
+                            <td>《追风筝的人》</td>
+                            <td>卡勒德·胡赛尼</td>
+                            <td>¥39.00</td>
+                            <td><button class="table-cart-btn" data-text="已加入购物车">加入购物车</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+
+        <aside class="right-col">
+            <div class="promotion">
+                <h3>促销信息</h3>
+                <div class="promotion-item">
+                    <i class="fas fa-tag"></i>
+                    <p>满100减20</p>
+                </div>
+                <div class="promotion-item">
+                    <i class="fas fa-percent"></i>
+                    <p>会员打8折</p>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <div class="cart" id="floatCart">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count-float">0</span>
+    </div>
+    
+    <div class="back-top">↑</div>
+
+    <!-- 消息提示 -->
+    <div class="message" id="message"></div>
+
+    <script>
+        // DOM元素获取
+        const loginLink = document.getElementById('loginLink');
+        const loginModal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const toRegister = document.getElementById('toRegister');
+        const toLogin = document.getElementById('toLogin');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const message = document.getElementById('message');
+        const bookDetailModal = document.getElementById('bookDetailModal');
+        const detailCartBtn = document.getElementById('detailCartBtn');
+        
+        // 模态框控制函数
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function hideModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        
+        // 登录/注册模态框切换
+        loginLink.addEventListener('click', () => {
+            showModal('loginModal');
+        });
+
+        toRegister.addEventListener('click', () => {
+            hideModal('loginModal');
+            showModal('registerModal');
+        });
+
+        toLogin.addEventListener('click', () => {
+            hideModal('registerModal');
+            showModal('loginModal');
+        });
+
+        // 关闭模态框按钮
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modalId = this.dataset.modal;
+                hideModal(modalId);
+            });
+        });
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    hideModal(modal.id);
+                }
+            });
+        });
+
+        // 表单提交处理
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
+            
+            if (user) {
+                showMessage('登录成功！');
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                hideModal('loginModal');
+                updateUserInfo();
+            } else {
+                showMessage('用户名或密码错误！', 'error');
+            }
+        });
+
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const regUsername = document.getElementById('regUsername').value;
+            const regEmail = document.getElementById('regEmail').value;
+            const regPassword = document.getElementById('regPassword').value;
+            const regConfirmPassword = document.getElementById('regConfirmPassword').value;
+            
+            if (regPassword !== regConfirmPassword) {
+                showMessage('两次输入的密码不一致！', 'error');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.some(u => u.username === regUsername)) {
+                showMessage('用户名已存在！', 'error');
+                return;
+            }
+            
+            if (users.some(u => u.email === regEmail)) {
+                showMessage('邮箱已被注册！', 'error');
+                return;
+            }
+            
+            const newUser = {
+                username: regUsername,
+                email: regEmail,
+                password: regPassword,
+                registerTime: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            showMessage('注册成功！');
+            hideModal('registerModal');
+            showModal('loginModal');
+        });
+
+        // 更新用户信息显示
+        function updateUserInfo() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (currentUser) {
+                loginLink.innerHTML = `<i class="fas fa-user"></i>${currentUser.username}`;
+            }
+        }
+
+        // 消息提示函数
+        function showMessage(text, type = 'success') {
+            message.textContent = text;
+            message.classList.add('show');
+            
+            if (type === 'error') {
+                message.style.background = 'rgba(231, 76, 60, 0.8)';
+            } else {
+                message.style.background = 'rgba(46, 204, 113, 0.8)';
+            }
+            
+            setTimeout(() => {
+                message.classList.remove('show');
+            }, 3000);
+        }
+
+        // 图书详情弹窗
+        document.querySelectorAll('.book-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                    return;
+                }
+                
+                const bookId = this.dataset.id;
+                const bookName = this.dataset.name;
+                const bookPrice = this.dataset.price;
+                const bookImg = this.dataset.img;
+                const bookAuthor = this.dataset.author || '未知作者';
+                const bookDescription = this.dataset.description || '暂无详细描述';
+                
+                document.getElementById('detailImage').src = bookImg;
+                document.getElementById('detailTitle').textContent = bookName;
+                document.getElementById('detailAuthor').textContent = `作者：${bookAuthor}`;
+                document.getElementById('detailPrice').textContent = `¥${bookPrice}`;
+                document.getElementById('detailDescription').textContent = bookDescription;
+                
+                detailCartBtn.dataset.id = bookId;
+                detailCartBtn.dataset.name = bookName;
+                detailCartBtn.dataset.price = bookPrice;
+                detailCartBtn.dataset.img = bookImg;
+                
+                showModal('bookDetailModal');
+            });
+        });
+
+        // 购物车功能
+        let cartData = JSON.parse(localStorage.getItem('cartData') || '[]');
+        const cartBtns = document.querySelectorAll('.cart-btn, .table-cart-btn');
+        const cartCount = document.querySelector('.cart-count');
+        const cartCountFloat = document.querySelector('.cart-count-float');
+        const cartNav = document.getElementById('cartNav');
+        const floatCart = document.getElementById('floatCart');
+        const cartModal = document.getElementById('cartModal');
+        const cartEmpty = document.getElementById('cartEmpty');
+        const cartList = document.getElementById('cartList');
+        const totalPrice = document.getElementById('totalPrice');
+        
+        // 加入购物车按钮事件
+        function addToCart(bookId, bookName, bookPrice, bookImg, event) {
+            if (event) {
+                createAddToCartAnimation(event);
+            }
+            
+            const existingItem = cartData.find(item => item.id === bookId);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cartData.push({
+                    id: bookId,
+                    name: bookName,
+                    price: parseFloat(bookPrice),
+                    img: bookImg,
+                    quantity: 1
+                });
+            }
+            
+            localStorage.setItem('cartData', JSON.stringify(cartData));
+            updateCart();
+            
+            if (event) {
+                showTooltip(event, '已加入购物车');
+            } else {
+                showMessage('已加入购物车');
+            }
+        }
+        
+        cartBtns.forEach(btn => {
+            btn.addEventListener('click', function(event) {
+                let bookItem;
+                if (this.classList.contains('table-cart-btn')) {
+                    bookItem = this.closest('tr');
+                } else if (this.id === 'detailCartBtn') {
+                    addToCart(this.dataset.id, this.dataset.name, this.dataset.price, this.dataset.img, event);
+                    return;
+                } else {
+                    bookItem = this.closest('.book-item');
+                }
+                
+                const bookId = bookItem.dataset.id;
+                const bookName = bookItem.dataset.name;
+                const bookPrice = bookItem.dataset.price;
+                const bookImg = bookItem.dataset.img;
+                
+                addToCart(bookId, bookName, bookPrice, bookImg, event);
+            });
+        });
+        
+        detailCartBtn.addEventListener('click', function(event) {
+            addToCart(this.dataset.id, this.dataset.name, this.dataset.price, this.dataset.img, event);
+        });
+        
+        // 创建加入购物车动画
+        function createAddToCartAnimation(event) {
+            const animation = document.createElement('div');
+            animation.className = 'add-to-cart-animation';
+            animation.innerHTML = '<i class="fas fa-cart-plus"></i>';
+            
+            const rect = event.target.getBoundingClientRect();
+            animation.style.left = rect.left + 'px';
+            animation.style.top = rect.top + 'px';
+            
+            const cartRect = floatCart.getBoundingClientRect();
+            const endX = cartRect.left + cartRect.width/2 - rect.left;
+            const endY = cartRect.top + cartRect.height/2 - rect.top;
+            
+            animation.style.setProperty('--endX', endX + 'px');
+            animation.style.setProperty('--endY', endY + 'px');
+            
+            document.body.appendChild(animation);
+            
+            setTimeout(() => {
+                document.body.removeChild(animation);
+            }, 800);
+        }
+        
+        // 显示提示框
+        function showTooltip(event, text) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = text;
+            tooltip.style.left = `${event.pageX}px`;
+            tooltip.style.top = `${event.pageY - 30}px`;
+            document.body.appendChild(tooltip);
+            
+            setTimeout(() => {
+                tooltip.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(tooltip);
+                }, 300);
+            }, 2000);
+        }
+        
+        // 更新购物车显示
+        function updateCart() {
+            const totalItems = cartData.reduce((total, item) => total + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCountFloat.textContent = totalItems;
+            
+            if (cartData.length === 0) {
+                cartEmpty.style.display = 'block';
+                cartList.style.display = 'none';
+                totalPrice.textContent = '¥0.00';
+                return;
+            }
+
+            cartEmpty.style.display = 'none';
+            cartList.style.display = 'block';
+            cartList.innerHTML = '';
+            let total = 0;
+            
+            cartData.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.dataset.id = item.id;
+                cartItem.innerHTML = `
+                    <img src="${item.img}" alt="${item.name}" class="cart-item-img">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">¥${item.price.toFixed(2)}</div>
+                    </div>
+                    <div class="cart-item-quantity">
+                        <button class="quantity-btn minus">-</button>
+                        <input type="number" class="quantity-input" value="${item.quantity}" min="1">
+                        <button class="quantity-btn plus">+</button>
+                    </div>
+                    <button class="delete-item"><i class="fas fa-trash"></i></button>
+                `;
+                cartList.appendChild(cartItem);
+            });
+
+            totalPrice.textContent = `¥${total.toFixed(2)}`;         
+            bindCartEvents();
+        }      
+        
+        // 绑定购物车事件
+        function bindCartEvents() {
+            document.querySelectorAll('.quantity-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const cartItem = this.closest('.cart-item');
+                    const itemId = cartItem.dataset.id;
+                    const quantityInput = cartItem.querySelector('.quantity-input');
+                    let quantity = parseInt(quantityInput.value);
+
+                    if (btn.classList.contains('plus')) {
+                        quantity++;
+                    } else if (btn.classList.contains('minus') && quantity > 1) {
+                        quantity--;
+                    }
+
+                    quantityInput.value = quantity;
+                    
+                    const item = cartData.find(i => i.id === itemId);
+                    if (item) {
+                        item.quantity = quantity;
+                        localStorage.setItem('cartData', JSON.stringify(cartData));
+                        updateCart();
+                    }
+                });
+            });
+          
+            document.querySelectorAll('.quantity-input').forEach(input => {
+                input.addEventListener('change', function() {
+                    const cartItem = this.closest('.cart-item');
+                    const itemId = cartItem.dataset.id;
+                    let quantity = parseInt(this.value) || 1;
+                    quantity = Math.max(1, quantity);
+                    this.value = quantity;
+
+                    const item = cartData.find(i => i.id === itemId);
+                    if (item) {
+                        item.quantity = quantity;
+                        localStorage.setItem('cartData', JSON.stringify(cartData));
+                        updateCart();
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.delete-item').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const cartItem = this.closest('.cart-item');
+                    const itemId = cartItem.dataset.id;
+                    cartData = cartData.filter(item => item.id !== itemId);
+                    localStorage.setItem('cartData', JSON.stringify(cartData));
+                    updateCart();
+                });
+            });
+        }
+        
+        // 打开/关闭购物车
+        cartNav.addEventListener('click', () => showModal('cartModal'));
+        floatCart.addEventListener('click', () => showModal('cartModal'));
+        
+        // 返回顶部
+        document.querySelector('.back-top').addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 滚动监听
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                document.body.classList.add('scroll');
+            } else {
+                document.body.classList.remove('scroll');
+            }
+        });
+
+        // 页面加载时初始化
+        updateCart();
+        updateUserInfo();
+    </script>
+</body>
+</html>
