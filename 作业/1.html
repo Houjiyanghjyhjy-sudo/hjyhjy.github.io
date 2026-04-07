@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>秋分书城 - 智能图书推荐系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 全局样式 */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --shadow-heavy: 0 15px 40px rgba(0, 0, 0, 0.2);
+            --transition-smooth: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --transition-fast: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* 页头样式 */
+        header {
+            background: linear-gradient(135deg, var(--secondary-color), var(--dark-color));
+            color: white;
+            padding: 15px 0;
+            box-shadow: var(--shadow-heavy);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* 实时时间显示 */
+        .real-time {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .real-time i {
+            color: var(--primary-color);
+        }
+
+        /* 智能图书搜索框样式 */
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 30px;
+            position: relative;
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            background: white;
+            box-shadow: var(--shadow-medium);
+            transition: var(--transition-smooth);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3), var(--shadow-medium);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        /* 搜索筛选按钮 */
+        .search-filters {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 6px 15px;
+            border: none;
+            border-radius: 20px;
+            background: white;
+            color: var(--dark-color);
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition-fast);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-light);
+        }
+
+        /* 搜索结果下拉框 */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow-heavy);
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1001;
+            margin-top: 5px;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .result-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: var(--transition-fast);
+        }
+
+        .result-item:hover {
+            background: var(--light-color);
+            transform: translateX(5px);
+        }
+
+        .result-item img {
+            width: 40px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .result-info h4 {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .result-info p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 用户登录区域 */
+        .auth-section {
+            position: relative;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .modal-content h2 {
+            padding: 25px;
+            background: linear-gradient(135deg, var(--secondary-color), var(--dark-color));
+            color: white;
+            margin: 0;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .close-btn:hover {
+            transform: rotate(90deg);
+        }
+
+        /* 主内容区 */
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            display: grid;
+            grid-template-columns: 1fr 3fr 1fr;
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        /* 左侧边栏 */
+        .left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .card h3 {
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-color);
+        }
+
+        /* 图书卡片翻转容器 */
+        .book-card-container {
+            width: 100%;
+            height: 380px;
+            perspective: 1000px;
+        }
+
+        .book-card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .book-card:hover {
+            transform: rotateY(180deg);
+        }
+
+        .book-card-front,
+        .book-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .book-card-front {
+            background: white;
+        }
+
+        .book-card-back {
+            background: linear-gradient(135deg, var(--secondary-color), var(--dark-color));
+            color: white;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* 图书前面内容 */
+        .book-image-container {
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .book-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition-smooth);
+        }
+
+        .book-card:hover .book-image {
+            transform: scale(1.05);
+        }
+
+        .book-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .book-front-info {
+            padding: 20px;
+        }
+
+        .book-front-title {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+        }
+
+        .book-front-author {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .book-front-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .book-front-price {
+            color: var(--accent-color);
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .book-front-rating {
+            color: #f39c12;
+        }
+
+        /* 图书背面内容 */
+        .book-back-content {
+            padding: 25px;
+            flex: 1;
+        }
+
+        .book-back-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .book-back-author {
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        .book-back-price {
+            font-size: 24px;
+            color: #f1c40f;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .book-back-rating {
+            color: #f1c40f;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .book-back-description {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .book-back-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .stock-status {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .stock-status.in-stock {
+            background: var(--success-color);
+        }
+
+        .stock-status.out-stock {
+            background: #95a5a6;
+        }
+
+        /* 随机图书推荐模块 */
+        .random-books {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .random-book {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            background: var(--light-color);
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .random-book:hover {
+            background: #e0e7f1;
+            transform: translateX(5px);
+        }
+
+        .random-book img {
+            width: 50px;
+            height: 65px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .random-book-info h4 {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .random-book-info .price {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .refresh-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            transition: var(--transition-smooth);
+        }
+
+        .refresh-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px) rotate(180deg);
+        }
+
+        /* 中间内容区 */
+        .middle-col {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* 图书列表排序与筛选功能 */
+        .list-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .sort-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sort-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .sort-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .sort-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-light);
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .filter-checkbox input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* 图书网格 */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* 右侧边栏 */
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 页脚 */
+        footer {
+            background: linear-gradient(135deg, var(--secondary-color), var(--dark-color));
+            color: white;
+            padding: 50px 0 20px;
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .copyright {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease 0.5s forwards;
+            text-align: center;
+            padding: 20px 0;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr 2fr;
+            }
+            
+            .right-col {
+                grid-column: 1 / -1;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                display: grid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .search-container {
+                width: 100%;
+                margin: 10px 0;
+            }
+            
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .list-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .sort-buttons {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .books-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 页头 -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <h1><i class="fas fa-book-open"></i> 秋分书城</h1>
+                <p>智能图书推荐系统</p>
+            </div>
+            
+            <!-- 实时时间显示 -->
+            <div class="real-time">
+                <i class="fas fa-clock"></i>
+                <span id="currentTime">2023-11-15 14:30:45</span>
+            </div>
+            
+            <!-- 智能图书搜索框 -->
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="搜索图书、作者或分类..." autocomplete="off">
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+                <div class="search-filters">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="title">书名</button>
+                    <button class="filter-btn" data-filter="author">作者</button>
+                    <button class="filter-btn" data-filter="category">分类</button>
+                </div>
+            </div>
+            
+            <!-- 登录表单入口 -->
+            <div class="auth-section">
+                <div class="auth-buttons">
+                    <button class="btn btn-primary" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> 登录
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 登录模态框 -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2><i class="fas fa-sign-in-alt"></i> 用户登录</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername"><i class="fas fa-user"></i> 用户名</label>
+                    <input type="text" id="loginUsername" class="form-control" 
+                           placeholder="请输入邮箱或手机号" autocomplete="username">
+                    <div class="validation-message" id="usernameValidation"></div>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword"><i class="fas fa-lock"></i> 密码</label>
+                    <input type="password" id="loginPassword" class="form-control" 
+                           placeholder="请输入密码" autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+                        <i class="fas fa-sign-in-alt"></i> 登录
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <!-- 左侧边栏 - 随机图书推荐 -->
+        <aside class="left-col">
+            <div class="card">
+                <h3><i class="fas fa-random"></i> 随机推荐</h3>
+                <div class="random-books" id="randomBooks">
+                    <!-- 随机图书会动态添加到这里 -->
+                </div>
+                <button class="refresh-btn" id="refreshRandom">
+                    <i class="fas fa-redo"></i> 换一批
+                </button>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fas fa-tags"></i> 热门分类</h3>
+                <ul class="category-list">
+                    <li>文学小说 (128)</li>
+                    <li>科技科普 (96)</li>
+                    <li>经济管理 (87)</li>
+                    <li>人文历史 (112)</li>
+                    <li>生活艺术 (75)</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- 中间内容区 -->
+        <section class="middle-col">
+            <!-- 图书列表排序与筛选功能 -->
+            <div class="list-controls">
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="default">默认排序</button>
+                    <button class="sort-btn" data-sort="price-asc">价格升序</button>
+                    <button class="sort-btn" data-sort="price-desc">价格降序</button>
+                    <button class="sort-btn" data-sort="rating">按评分排序</button>
+                </div>
+                <label class="filter-checkbox">
+                    <input type="checkbox" id="inStockOnly"> 只看有货
+                </label>
+            </div>
+
+            <!-- 图书网格 - 全部带翻转效果 -->
+            <div class="books-grid" id="booksGrid">
+                <!-- 图书会动态添加到这里 -->
+            </div>
+        </section>
+
+        <!-- 右侧边栏 -->
+        <aside class="right-col">
+            <div class="card">
+                <h3><i class="fas fa-fire"></i> 畅销榜</h3>
+                <ol>
+                    <li>JavaScript高级程序设计</li>
+                    <li>Python编程从入门到实践</li>
+                    <li>React设计原理</li>
+                    <li>算法图解</li>
+                    <li>Vue.js设计与实现</li>
+                </ol>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fas fa-gift"></i> 促销活动</h3>
+                <ul>
+                    <li>新用户注册立减20元</li>
+                    <li>畅销图书8折起</li>
+                    <li>满100元包邮</li>
+                    <li>会员专享9折优惠</li>
+                </ul>
+            </div>
+        </aside>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="copyright">
+            <p>&copy; 2023 秋分书城 - 智能图书推荐系统. 保留所有权利.</p>
+            <p>本网站仅用于学习展示，图书信息仅供参考。</p>
+        </div>
+    </footer>
+
+    <script>
+        // 图书数据
+        const booksData = [
+            { 
+                id: 1, 
+                title: "JavaScript高级程序设计", 
+                author: "Nicholas C. Zakas", 
+                category: "编程", 
+                price: 89.90, 
+                rating: 4.7, 
+                image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=500&fit=crop", 
+                inStock: true,
+                description: "本书是JavaScript领域最权威的经典著作，全面深入地介绍了JavaScript的核心概念和技术，适合有一定编程基础的读者深入学习。"
+            },
+            { 
+                id: 2, 
+                title: "Python编程从入门到实践", 
+                author: "Eric Matthes", 
+                category: "编程", 
+                price: 75.50, 
+                rating: 4.9, 
+                image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=500&fit=crop", 
+                inStock: true,
+                description: "一本针对零基础读者的Python编程入门书，通过实际项目帮助读者掌握Python编程，适合初学者系统学习。"
+            },
+            { 
+                id: 3, 
+                title: "React设计原理", 
+                author: "卡颂", 
+                category: "前端开发", 
+                price: 68.00, 
+                rating: 4.6, 
+                image: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=400&h=500&fit=crop", 
+                inStock: true,
+                description: "从React源码层面深入剖析React的设计原理，帮助开发者深入理解React的工作机制，提升开发技能。"
+            },
+            { 
+                id: 4, 
+                title: "算法图解", 
+                author: "Aditya Bhargava", 
+                category: "算法", 
+                price: 52.80, 
+                rating: 4.8, 
+                image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=500&fit=crop", 
+                inStock: false,
+                description: "本书以丰富的图示和易懂的语言讲解常用算法，是算法入门的绝佳选择，适合所有编程爱好者阅读。"
+            },
+            { 
+                id: 5, 
+                title: "Vue.js设计与实现", 
+                author: "霍春阳", 
+                category: "前端开发", 
+                price: 79.90, 
+                rating: 4.5, 
+                image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=500&fit=crop", 
+                inStock: true,
+                description: "深入剖析Vue.js框架的设计原理和实现机制，帮助开发者更好地理解和使用Vue.js框架。"
+            },
+            { 
+                id: 6, 
+                title: "TypeScript项目开发实战", 
+                author: "张益新", 
+                category: "编程", 
+                price: 68.50, 
+                rating: 4.4, 
+                image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=500&fit=crop", 
+                inStock: true,
+                description: "通过实际项目案例讲解TypeScript的开发技巧和最佳实践，适合有一定JavaScript基础的开发者。"
+            },
+            { 
+                id: 7, 
+                title: "Web性能权威指南", 
+                author: "Ilya Grigorik", 
+                category: "Web开发", 
+                price: 95.00, 
+                rating: 4.9, 
+                image: "https://images.unsplash.com/photo-1531346688376-ab6275c4725e?w=400&h=500&fit=crop", 
+                inStock: false,
+                description: "系统介绍Web性能优化的原理和实践，涵盖了从网络协议到浏览器渲染的全方位性能优化知识。"
+            },
+            { 
+                id: 8, 
+                title: "深入浅出Node.js", 
+                author: "朴灵", 
+                category: "后端开发", 
+                price: 72.00, 
+                rating: 4.7, 
+                image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=500&fit=crop", 
+                inStock: true,
+                description: "深入讲解Node.js的核心原理和应用开发，适合有一定JavaScript基础的后端开发者阅读。"
+            },
+            { 
+                id: 9, 
+                title: "重构：改善既有代码的设计", 
+                author: "Martin Fowler", 
+                category: "编程", 
+                price: 88.00, 
+                rating: 4.8, 
+                image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=500&fit=crop", 
+                inStock: true,
+                description: "重构领域的经典著作，详细介绍了改善代码设计的各种方法和技巧，适合所有程序员阅读。"
+            },
+            { 
+                id: 10, 
+                title: "代码整洁之道", 
+                author: "Robert C. Martin", 
+                category: "编程", 
+                price: 65.00, 
+                rating: 4.6, 
+                image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=500&fit=crop", 
+                inStock: true,
+                description: "讲述如何编写整洁、可维护的代码，包含大量实用建议和最佳实践，适合所有程序员学习。"
+            }
+        ];
+
+        // DOM元素
+        const loginBtn = document.getElementById('loginBtn');
+        const loginModal = document.getElementById('loginModal');
+        const closeBtn = document.querySelector('.close-btn');
+        const loginForm = document.getElementById('loginForm');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const refreshRandomBtn = document.getElementById('refreshRandom');
+        const randomBooksContainer = document.getElementById('randomBooks');
+        const booksGrid = document.getElementById('booksGrid');
+        const sortBtns = document.querySelectorAll('.sort-btn');
+        const inStockCheckbox = document.getElementById('inStockOnly');
+        const currentTimeElement = document.getElementById('currentTime');
+
+        // 当前搜索过滤器和排序状态
+        let currentFilter = 'all';
+        let currentSort = 'default';
+        let filteredBooks = [...booksData];
+
+        // 实时时间更新函数
+        function updateCurrentTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const timeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            currentTimeElement.textContent = timeString;
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 启动实时时钟
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            
+            renderBooksGrid(booksData);
+            refreshRandomBooks();
+            initEventListeners();
+        });
+
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 登录模态框
+            loginBtn.addEventListener('click', () => showModal(loginModal));
+            closeBtn.addEventListener('click', () => hideModal(loginModal));
+            loginModal.addEventListener('click', (e) => {
+                if (e.target === loginModal) hideModal(loginModal);
+            });
+
+            // 智能搜索
+            searchInput.addEventListener('input', handleSearch);
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    handleSearch();
+                });
+            });
+
+            // 随机图书推荐
+            refreshRandomBtn.addEventListener('click', refreshRandomBooks);
+
+            // 排序与筛选
+            sortBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    sortBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSort = btn.dataset.sort;
+                    sortAndFilterBooks();
+                });
+            });
+
+            inStockCheckbox.addEventListener('change', sortAndFilterBooks);
+            
+            // 登录表单提交
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('登录功能演示，实际开发中需要后端验证');
+                hideModal(loginModal);
+            });
+        }
+
+        // 显示模态框
+        function showModal(modal) {
+            modal.classList.add('show');
+        }
+
+        // 隐藏模态框
+        function hideModal(modal) {
+            modal.classList.remove('show');
+        }
+
+        // 智能搜索功能
+        function handleSearch() {
+            const query = searchInput.value.trim().toLowerCase();
+            
+            if (!query) {
+                searchResults.classList.remove('active');
+                return;
+            }
+            
+            let results = [];
+            
+            booksData.forEach(book => {
+                let matches = false;
+                
+                if (currentFilter === 'all' || currentFilter === 'title') {
+                    matches = matches || book.title.toLowerCase().includes(query);
+                }
+                if (currentFilter === 'all' || currentFilter === 'author') {
+                    matches = matches || book.author.toLowerCase().includes(query);
+                }
+                if (currentFilter === 'all' || currentFilter === 'category') {
+                    matches = matches || book.category.toLowerCase().includes(query);
+                }
+                
+                if (matches) {
+                    results.push(book);
+                }
+            });
+            
+            displaySearchResults(results);
+        }
+
+        // 显示搜索结果
+        function displaySearchResults(results) {
+            searchResults.innerHTML = '';
+            
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div class="result-item">没有找到相关图书</div>';
+            } else {
+                results.slice(0, 8).forEach(book => {
+                    const item = document.createElement('div');
+                    item.className = 'result-item';
+                    item.innerHTML = `
+                        <img src="${book.image}" alt="${book.title}">
+                        <div class="result-info">
+                            <h4>${book.title}</h4>
+                            <p>${book.author} · ${book.category}</p>
+                            <span class="result-category">¥${book.price}</span>
+                        </div>
+                    `;
+                    item.addEventListener('click', () => {
+                        searchInput.value = book.title;
+                        searchResults.classList.remove('active');
+                        highlightBook(book.id);
+                    });
+                    searchResults.appendChild(item);
+                });
+            }
+            
+            searchResults.classList.add('active');
+        }
+
+        // 高亮显示搜索到的图书
+        function highlightBook(bookId) {
+            const allCards = document.querySelectorAll('.book-card');
+            allCards.forEach(card => {
+                card.style.boxShadow = 'none';
+            });
+            
+            const targetCard = document.querySelector(`[data-book-id="${bookId}"]`);
+            if (targetCard) {
+                targetCard.style.boxShadow = '0 0 0 3px var(--primary-color), var(--shadow-medium)';
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // 随机图书推荐
+        function refreshRandomBooks() {
+            randomBooksContainer.innerHTML = '';
+            
+            // 使用Math.random()随机选择5本不同的图书
+            const shuffled = [...booksData].sort(() => Math.random() - 0.5);
+            const randomBooks = shuffled.slice(0, 5);
+            
+            randomBooks.forEach(book => {
+                const bookElement = document.createElement('div');
+                bookElement.className = 'random-book';
+                bookElement.innerHTML = `
+                    <img src="${book.image}" alt="${book.title}">
+                    <div class="random-book-info">
+                        <h4>${book.title}</h4>
+                        <p>${book.author}</p>
+                        <div class="price">¥${book.price}</div>
+                    </div>
+                `;
+                bookElement.addEventListener('click', () => {
+                    highlightBook(book.id);
+                });
+                randomBooksContainer.appendChild(bookElement);
+            });
+        }
+
+        // 渲染图书网格
+        function renderBooksGrid(books) {
+            booksGrid.innerHTML = '';
+            
+            books.forEach(book => {
+                const bookElement = document.createElement('div');
+                bookElement.className = 'book-card-container';
+                bookElement.innerHTML = `
+                    <div class="book-card" data-book-id="${book.id}">
+                        <!-- 前面内容 -->
+                        <div class="book-card-front">
+                            <div class="book-image-container">
+                                <img src="${book.image}" alt="${book.title}" class="book-image">
+                                <span class="book-badge">${book.category}</span>
+                            </div>
+                            <div class="book-front-info">
+                                <h3 class="book-front-title">${book.title}</h3>
+                                <p class="book-front-author">${book.author}</p>
+                                <div class="book-front-meta">
+                                    <div class="book-front-price">¥${book.price}</div>
+                                    <div class="book-front-rating">
+                                        <i class="fas fa-star"></i> ${book.rating}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 背面内容 -->
+                        <div class="book-card-back">
+                            <div class="book-back-content">
+                                <h3 class="book-back-title">${book.title}</h3>
+                                <p class="book-back-author">作者：${book.author}</p>
+                                <div class="book-back-price">¥${book.price}</div>
+                                <div class="book-back-rating">
+                                    ${getStarRating(book.rating)}
+                                    <span>${book.rating} 分</span>
+                                </div>
+                                <p class="book-back-description">${book.description}</p>
+                                <div class="stock-status ${book.inStock ? 'in-stock' : 'out-stock'}">
+                                    ${book.inStock ? '有货' : '缺货'}
+                                </div>
+                            </div>
+                            <div class="book-back-actions">
+                                ${book.inStock ? 
+                                    `<button class="btn btn-primary" onclick="addToCart(${book.id})">加入购物车</button>` :
+                                    `<button class="btn btn-secondary" disabled>已售罄</button>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+                booksGrid.appendChild(bookElement);
+            });
+        }
+
+        // 生成星级评分
+        function getStarRating(rating) {
+            let stars = '';
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '<i class="fas fa-star"></i>';
+            }
+            
+            if (hasHalfStar) {
+                stars += '<i class="fas fa-star-half-alt"></i>';
+            }
+            
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            for (let i = 0; i < emptyStars; i++) {
+                stars += '<i class="far fa-star"></i>';
+            }
+            
+            return stars;
+        }
+
+        // 排序和筛选图书
+        function sortAndFilterBooks() {
+            let filtered = [...booksData];
+            
+            // 筛选：只看有货
+            if (inStockCheckbox.checked) {
+                filtered = filtered.filter(book => book.inStock);
+            }
+            
+            // 排序
+            switch (currentSort) {
+                case 'price-asc':
+                    filtered.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-desc':
+                    filtered.sort((a, b) => b.price - a.price);
+                    break;
+                case 'rating':
+                    filtered.sort((a, b) => b.rating - a.rating);
+                    break;
+                default:
+                    filtered.sort((a, b) => a.id - b.id);
+            }
+            
+            filteredBooks = filtered;
+            renderBooksGrid(filtered);
+        }
+
+        // 模拟加入购物车
+        function addToCart(bookId) {
+            const book = booksData.find(b => b.id === bookId);
+            if (book) {
+                alert(`《${book.title}》已加入购物车`);
+            }
+        }
+
+        // 点击搜索框外部时关闭搜索结果
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.remove('active');
+            }
+        });
+
+        // 输入框获取焦点时显示结果
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.trim()) {
+                searchResults.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

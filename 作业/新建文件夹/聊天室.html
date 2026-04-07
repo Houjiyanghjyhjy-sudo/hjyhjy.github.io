@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .datediv{
+            width: 400px;;
+            
+            margin: auto;
+            border-style: solid;
+            border-color: rgb(126, 123, 123);
+            border-width: 2px;
+            border-radius: 10px;
+        }
+        /* 头部*/
+        .topDiv{
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-weight: 400;
+            font-size: 17px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            padding-left: 20px;
+            box-sizing: border-box;
+            border-bottom-width: 1px;
+            border-bottom-style: solid;
+            border-bottom-color: rgba(23, 22, 22, 0.913);
+        }
+
+
+
+        /* 身体*/
+        .bodyDiv{
+            width: 100%;
+            height: 450px;
+            background-color: rgb(196, 229, 236);
+            position: relative;
+        }
+
+        .body1{
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgb(145, 145, 223);
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            line-height: 50px;
+            text-align: center;
+        }
+
+        .bodyy1{
+            height: 70px;
+            width: 140px;
+            background-color: white;
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+        }
+            
+        /* 尾部*/
+        .bottomDiv{
+            width: 100%;
+            height: 150px;
+            background-color: rgb(26, 186, 23);
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            position: relative;
+        }
+
+        .text{
+            width: 100%;
+            height: 100%;
+            /* 取消边框*/
+            border-width: 0px;
+            box-sizing: border-box;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            outline: none;
+            padding: 15px;
+            box-sizing: border-box;
+            resize: none;
+            font-size: 17px;
+        }
+
+        .fasong{
+            width: 90px;
+            height: 35px;
+            line-height: 35px;
+            background-color: rgb(54, 99, 245);
+            border-radius: 10px;
+            font-size: 17px;
+            color: rgb(255, 255, 255);
+            text-align: center;
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="datediv">
+        <!-- 头部-->
+        <div class="topDiv">
+            王者峡谷交流圈
+        </div>
+ 
+
+        <!-- 身体-->
+        <div class="bodyDiv">
+            <div class="body1">
+                牛魔
+                <div class="bodyy1">嘻嘻</div>
+            </div>
+
+        </div>
+
+        <!-- 尾部-->
+        <div class="bottomDiv">
+            <textarea class="text " placeholder="请输入"></textarea>
+            <div class="fasong">发送</div>
+        </div>
+        
+    </div>
+</body>
+</html>
